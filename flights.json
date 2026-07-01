@@ -2,11 +2,11 @@
   {
     "origin": "DFW",
     "destination": "JFK",
-    "month": "2026-07-05"
+    "date": "2026-07-05"
   },
   {
     "origin": "DFW",
     "destination": "SFO",
-    "month": "2026-07-05"
+    "date": "2026-07-05"
   }
 ]
