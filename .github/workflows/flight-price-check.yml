@@ -1,13 +1,6 @@
 name: Flight Price Tracker
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "price_state.json"
-  schedule:
-    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
