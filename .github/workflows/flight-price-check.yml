@@ -3,6 +3,9 @@ name: Flight Price Tracker
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   check-flight-price:
     runs-on: ubuntu-latest
@@ -16,15 +19,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Debug files
-        run: |
-          pwd
-          ls -la
-          echo "---- app.py content ----"
-          cat app.py
-          echo "---- requirements.txt content ----"
-          cat requirements.txt
-
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
@@ -36,3 +30,11 @@ jobs:
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
           ALERT_TO_EMAIL: ${{ secrets.ALERT_TO_EMAIL }}
         run: python -u app.py
+
+      - name: Save price state
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add price_state.json
+          git commit -m "update price state" || echo "No price state changes"
+          git push
