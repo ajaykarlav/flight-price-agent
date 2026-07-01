@@ -158,9 +158,3 @@ setup_db()
 add_flight("DFW", "JFK", "2026-08")
 
 check_prices()
-
-schedule.every(6).hours.do(check_prices)
-
-while True:
-    schedule.run_pending()
-    time.sleep(60)
