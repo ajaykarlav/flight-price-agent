@@ -17,7 +17,7 @@ FLIGHTS = [
     {
         "origin": "DFW",
         "destination": "JFK",
-        "departure_date": "2026-08-01"
+        "departure_date": "2026-08"
     }
 ]
 
