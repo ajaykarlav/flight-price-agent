@@ -60,11 +60,20 @@ def get_price(origin, destination, departure_date):
     if not data.get("data"):
         return None
 
-    return float(data["data"][0]["price"])
+    flight = data["data"][0]
+
+    return {
+        "price": float(flight["price"]),
+        "actual_date": flight.get("departure_at", "")[:10],
+        "airline": flight.get("airline", "N/A"),
+        "flight_number": flight.get("flight_number", "N/A")
+    }
 
 
-def send_email(origin, destination, departure_date, old_price, new_price):
+def send_email(origin, destination, search_month, actual_date, airline, flight_number, old_price, new_price):
     print("Preparing email...", flush=True)
+
+    savings = old_price - new_price
 
     msg = EmailMessage()
     msg["Subject"] = "Flight Price Drop Alert"
@@ -74,13 +83,18 @@ def send_email(origin, destination, departure_date, old_price, new_price):
     msg.set_content(f"""
 Good news!
 
-Your flight price dropped.
+Your tracked flight price dropped.
 
 Route: {origin} to {destination}
-Date: {departure_date}
+Search Month: {search_month}
+Cheapest Travel Date: {actual_date}
 
-Old lowest price: ${old_price}
-New price: ${new_price}
+Airline: {airline}
+Flight Number: {flight_number}
+
+Previous Lowest Price: ${old_price}
+Current Lowest Price: ${new_price}
+You Save: ${savings}
 
 Book soon because prices can change quickly.
 """)
@@ -105,19 +119,25 @@ def check_prices():
     for flight in FLIGHTS:
         origin = flight["origin"]
         destination = flight["destination"]
-        departure_date = flight["departure_date"]
+        search_month = flight["departure_date"]
 
-        key = f"{origin}-{destination}-{departure_date}"
+        key = f"{origin}-{destination}-{search_month}"
 
         try:
-            current_price = get_price(origin, destination, departure_date)
+            result = get_price(origin, destination, search_month)
 
-            if current_price is None:
+            if result is None:
                 print(f"No price found for {origin} to {destination}", flush=True)
                 continue
 
+            current_price = result["price"]
+            actual_date = result["actual_date"]
+            airline = result["airline"]
+            flight_number = result["flight_number"]
+
             print(
-                f"{origin} to {destination} on {departure_date}: ${current_price}",
+                f"{origin} to {destination}: ${current_price} "
+                f"(Travel Date: {actual_date}, Airline: {airline}, Flight: {flight_number})",
                 flush=True
             )
 
@@ -128,7 +148,17 @@ def check_prices():
                 print("Initial price saved.", flush=True)
 
             elif current_price < old_price:
-                send_email(origin, destination, departure_date, old_price, current_price)
+                send_email(
+                    origin,
+                    destination,
+                    search_month,
+                    actual_date,
+                    airline,
+                    flight_number,
+                    old_price,
+                    current_price
+                )
+
                 state[key] = current_price
                 print("Price dropped. Email sent.", flush=True)
 
