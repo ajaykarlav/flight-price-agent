@@ -7,7 +7,7 @@ on:
     paths-ignore:
       - "price_state.json"
   schedule:
-    - cron: "59 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
