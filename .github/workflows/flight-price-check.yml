@@ -5,31 +5,34 @@ on:
 
 jobs:
   check-flight-price:
-
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Install Python
         uses: actions/setup-python@v5
-
         with:
           python-version: "3.12"
 
-      - name: Install Dependencies
+      - name: Debug files
         run: |
-          pip install -r requirements.txt
+          pwd
+          ls -la
+          echo "---- app.py content ----"
+          cat app.py
+          echo "---- requirements.txt content ----"
+          cat requirements.txt
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
 
       - name: Run Flight Agent
-
+        timeout-minutes: 2
         env:
           TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
           ALERT_TO_EMAIL: ${{ secrets.ALERT_TO_EMAIL }}
-
-        run: |
-          python app.py
+        run: python -u app.py
