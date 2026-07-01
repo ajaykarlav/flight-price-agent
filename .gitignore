@@ -1,0 +1,4 @@
+.env
+flight_prices.db
+__pycache__/
+*.pyc
