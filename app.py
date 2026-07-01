@@ -18,7 +18,6 @@ FLIGHTS_FILE = "flights.json"
 def load_json_file(filename, default):
     if not os.path.exists(filename):
         return default
-
     with open(filename, "r") as file:
         return json.load(file)
 
@@ -31,11 +30,17 @@ def save_state(state):
 def get_dates_in_month(month):
     year, month_num = map(int, month.split("-"))
     total_days = calendar.monthrange(year, month_num)[1]
+    return [date(year, month_num, day).isoformat() for day in range(1, total_days + 1)]
 
-    return [
-        date(year, month_num, day).isoformat()
-        for day in range(1, total_days + 1)
-    ]
+
+def get_dates_to_check(tracked):
+    if "date" in tracked:
+        return [tracked["date"]], tracked["date"], "DATE"
+
+    if "month" in tracked:
+        return get_dates_in_month(tracked["month"]), tracked["month"], "MONTH"
+
+    raise ValueError("Each flight must have either 'date' or 'month'.")
 
 
 def format_duration(minutes):
@@ -47,8 +52,8 @@ def format_duration(minutes):
 def parse_nonstop_flights(data, origin, destination, departure_date):
     google_flights_url = data.get("search_metadata", {}).get("google_flights_url", "N/A")
     price_insights = data.get("price_insights", {})
-
     all_results = data.get("best_flights", []) + data.get("other_flights", [])
+
     nonstop_results = []
 
     for option in all_results:
@@ -99,14 +104,12 @@ def get_nonstop_flights_for_date(origin, destination, departure_date):
     return parse_nonstop_flights(response.json(), origin, destination, departure_date)
 
 
-def get_cheapest_nonstop_for_month(origin, destination, month):
-    print(f"Searching cheapest nonstop flight for {origin} to {destination} in {month}...", flush=True)
-
+def find_cheapest_nonstop(origin, destination, dates_to_check):
     cheapest = None
     dates_checked = 0
     nonstop_options_found = 0
 
-    for departure_date in get_dates_in_month(month):
+    for departure_date in dates_to_check:
         try:
             dates_checked += 1
             nonstop_flights = get_nonstop_flights_for_date(origin, destination, departure_date)
@@ -119,16 +122,10 @@ def get_cheapest_nonstop_for_month(origin, destination, month):
         except Exception as e:
             print(f"Error checking {departure_date}: {e}", flush=True)
 
-    print(
-        f"Completed {origin}-{destination} {month}. "
-        f"Dates checked: {dates_checked}, nonstop options found: {nonstop_options_found}",
-        flush=True
-    )
-
-    return cheapest
+    return cheapest, dates_checked, nonstop_options_found
 
 
-def send_email(origin, destination, month, old_price, flight):
+def send_email(origin, destination, period_label, period_type, old_price, flight):
     new_price = flight["price"]
     savings = old_price - new_price
 
@@ -150,7 +147,8 @@ Good news!
 A cheaper nonstop flight was found.
 
 Route: {origin} to {destination}
-Search Month: {month}
+Search Type: {period_type}
+Search Period: {period_label}
 
 Cheapest Travel Date: {flight["travel_date"]}
 Current Cheapest Price: ${new_price}
@@ -187,7 +185,7 @@ Please verify final price and availability before booking.
 
 
 def check_prices():
-    print("Checking monthly cheapest nonstop flight prices...", flush=True)
+    print("Checking cheapest nonstop flight prices...", flush=True)
 
     state = load_json_file(STATE_FILE, {})
     tracked_flights = load_json_file(FLIGHTS_FILE, [])
@@ -199,36 +197,57 @@ def check_prices():
     for tracked in tracked_flights:
         origin = tracked["origin"]
         destination = tracked["destination"]
-        month = tracked["month"]
 
-        key = f"{origin}-{destination}-{month}-CHEAPEST-NONSTOP"
+        try:
+            dates_to_check, period_label, period_type = get_dates_to_check(tracked)
+            key = f"{origin}-{destination}-{period_label}-CHEAPEST-NONSTOP"
 
-        cheapest = get_cheapest_nonstop_for_month(origin, destination, month)
+            print(
+                f"Searching cheapest nonstop flight for {origin} to {destination} "
+                f"for {period_type}: {period_label}...",
+                flush=True
+            )
 
-        if cheapest is None:
-            print(f"No nonstop flights found for {origin} to {destination} in {month}", flush=True)
-            continue
+            cheapest, dates_checked, nonstop_options_found = find_cheapest_nonstop(
+                origin,
+                destination,
+                dates_to_check
+            )
 
-        current_price = cheapest["price"]
-        old_price = state.get(key)
+            print(
+                f"Completed {origin}-{destination}. Dates checked: {dates_checked}, "
+                f"nonstop options found: {nonstop_options_found}",
+                flush=True
+            )
 
-        print(
-            f"Cheapest nonstop for {origin}-{destination} {month}: "
-            f"${current_price} on {cheapest['travel_date']} via {cheapest['airline']} {cheapest['flight_number']}",
-            flush=True
-        )
+            if cheapest is None:
+                print(f"No nonstop flights found for {origin} to {destination}", flush=True)
+                continue
 
-        if old_price is None:
-            state[key] = current_price
-            print("Initial price saved.", flush=True)
+            current_price = cheapest["price"]
+            old_price = state.get(key)
 
-        elif current_price < old_price:
-            send_email(origin, destination, month, old_price, cheapest)
-            state[key] = current_price
-            print("Price dropped. Email sent.", flush=True)
+            print(
+                f"Cheapest nonstop for {origin}-{destination} {period_label}: "
+                f"${current_price} on {cheapest['travel_date']} via "
+                f"{cheapest['airline']} {cheapest['flight_number']}",
+                flush=True
+            )
 
-        else:
-            print("No price drop.", flush=True)
+            if old_price is None:
+                state[key] = current_price
+                print("Initial price saved.", flush=True)
+
+            elif current_price < old_price:
+                send_email(origin, destination, period_label, period_type, old_price, cheapest)
+                state[key] = current_price
+                print("Price dropped. Email sent.", flush=True)
+
+            else:
+                print("No price drop.", flush=True)
+
+        except Exception as e:
+            print(f"Error processing route {origin}-{destination}: {e}", flush=True)
 
     save_state(state)
 
