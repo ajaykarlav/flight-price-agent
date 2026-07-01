@@ -55,6 +55,9 @@ def get_cheapest_flight(origin, destination, departure_date):
     response.raise_for_status()
 
     data = response.json()
+    import json
+
+    print(json.dumps(data, indent=2))
 
     flights = []
     flights.extend(data.get("best_flights", []))
