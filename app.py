@@ -11,8 +11,7 @@ ALERT_TO_EMAIL = os.getenv("ALERT_TO_EMAIL")
 
 STATE_FILE = "price_state.json"
 
-MAX_STOPS = 1
-MAX_DURATION_MINUTES = 360
+MAX_STOPS = 0
 
 FLIGHTS = [
     {
@@ -71,49 +70,28 @@ def get_cheapest_flight(origin, destination, departure_date):
     best_flights = data.get("best_flights", [])
     other_flights = data.get("other_flights", [])
 
-    def is_valid(option):
-        stops = len(option.get("flights", [])) - 1
-        duration = option.get("total_duration", 99999)
+    def is_nonstop(option):
+        legs = option.get("flights", [])
         price = option.get("price")
 
-        return (
-            price is not None
-            and stops <= MAX_STOPS
-            and duration <= MAX_DURATION_MINUTES
-        )
+        return price is not None and len(legs) - 1 == MAX_STOPS
 
-    valid_best = [f for f in best_flights if is_valid(f)]
-    valid_other = [f for f in other_flights if is_valid(f)]
+    valid_best = [f for f in best_flights if is_nonstop(f)]
+    valid_other = [f for f in other_flights if is_nonstop(f)]
 
     if valid_best:
         selected = min(valid_best, key=lambda f: f["price"])
-        selected_group = "Best Flights"
+        selected_group = "Best Flights - Nonstop"
     elif valid_other:
         selected = min(valid_other, key=lambda f: f["price"])
-        selected_group = "Other Flights"
+        selected_group = "Other Flights - Nonstop"
     else:
-        all_flights = best_flights + other_flights
-
-        if not all_flights:
-            return None
-
-        selected = min(all_flights, key=lambda f: f.get("price", float("inf")))
-        selected_group = "Fallback - No flight matched filters"
+        print("No nonstop flight found.", flush=True)
+        return None
 
     legs = selected.get("flights", [])
-
     first_leg = legs[0]
     last_leg = legs[-1]
-
-    stops = len(legs) - 1
-    layovers = selected.get("layovers", [])
-
-    layover_text = "None"
-    if layovers:
-        layover_text = ", ".join(
-            f'{layover.get("id", "N/A")} ({format_duration(layover.get("duration", 0))})'
-            for layover in layovers
-        )
 
     flight_numbers = " + ".join(
         leg.get("flight_number", "N/A") for leg in legs
@@ -128,13 +106,13 @@ def get_cheapest_flight(origin, destination, departure_date):
         "selected_group": selected_group,
         "airlines": airlines,
         "flight_numbers": flight_numbers,
-        "stops": stops,
+        "stops": 0,
         "total_duration": format_duration(selected.get("total_duration", 0)),
         "departure_airport": first_leg.get("departure_airport", {}).get("name", origin),
         "departure_time": first_leg.get("departure_airport", {}).get("time", "N/A"),
         "arrival_airport": last_leg.get("arrival_airport", {}).get("name", destination),
         "arrival_time": last_leg.get("arrival_airport", {}).get("time", "N/A"),
-        "layovers": layover_text,
+        "layovers": "None",
         "price_level": price_insights.get("price_level", "N/A"),
         "typical_price_range": price_insights.get("typical_price_range", []),
         "google_flights_url": google_flights_url
@@ -152,14 +130,14 @@ def send_email(origin, destination, departure_date, old_price, flight):
         typical_range_text = "N/A"
 
     msg = EmailMessage()
-    msg["Subject"] = "Live Flight Price Drop Alert"
+    msg["Subject"] = "Nonstop Flight Price Drop Alert"
     msg["From"] = EMAIL_USER
     msg["To"] = ALERT_TO_EMAIL
 
     msg.set_content(f"""
 Good news!
 
-A live Google Flights price drop was found.
+A nonstop Google Flights price drop was found.
 
 Route: {origin} to {destination}
 Travel Date: {departure_date}
@@ -201,7 +179,7 @@ Please verify final price and availability before booking because fares can chan
 
 
 def check_prices():
-    print("Checking flight prices...", flush=True)
+    print("Checking nonstop flight prices...", flush=True)
 
     state = load_state()
 
@@ -210,13 +188,13 @@ def check_prices():
         destination = tracked["destination"]
         departure_date = tracked["departure_date"]
 
-        key = f"{origin}-{destination}-{departure_date}"
+        key = f"{origin}-{destination}-{departure_date}-NONSTOP"
 
         try:
             flight = get_cheapest_flight(origin, destination, departure_date)
 
             if flight is None:
-                print(f"No live flight found for {origin} to {destination}", flush=True)
+                print(f"No nonstop flight found for {origin} to {destination}", flush=True)
                 continue
 
             current_price = flight["price"]
@@ -224,22 +202,21 @@ def check_prices():
 
             print(
                 f"{origin} to {destination} on {departure_date}: "
-                f"${current_price}, {flight['stops']} stop(s), "
-                f"{flight['total_duration']}, {flight['selected_group']}",
+                f"${current_price}, nonstop, {flight['total_duration']}, {flight['selected_group']}",
                 flush=True
             )
 
             if old_price is None:
                 state[key] = current_price
-                print("Initial live price saved.", flush=True)
+                print("Initial nonstop price saved.", flush=True)
 
             elif current_price < old_price:
                 send_email(origin, destination, departure_date, old_price, flight)
                 state[key] = current_price
-                print("Price dropped. Email sent.", flush=True)
+                print("Nonstop price dropped. Email sent.", flush=True)
 
             else:
-                print("No price drop.", flush=True)
+                print("No nonstop price drop.", flush=True)
 
         except Exception as e:
             print(f"Error checking {origin} to {destination}: {e}", flush=True)
