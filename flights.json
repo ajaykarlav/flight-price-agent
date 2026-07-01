@@ -1,0 +1,17 @@
+[
+  {
+    "origin": "DFW",
+    "destination": "JFK",
+    "month": "2026-08"
+  },
+  {
+    "origin": "DFW",
+    "destination": "LAX",
+    "month": "2026-08"
+  },
+  {
+    "origin": "DFW",
+    "destination": "SFO",
+    "month": "2026-08"
+  }
+]
