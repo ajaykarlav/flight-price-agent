@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "price_state.json"
   schedule:
-    - cron: "43 * * * *"
+    - cron: "59 * * * *"
   workflow_dispatch:
 
 permissions:
