@@ -25,7 +25,8 @@ jobs:
       - name: Run Flight Agent
         timeout-minutes: 2
         env:
-          TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          #TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
           EMAIL_APP_PASSWORD: ${{ secrets.EMAIL_APP_PASSWORD }}
           ALERT_TO_EMAIL: ${{ secrets.ALERT_TO_EMAIL }}
