@@ -4,7 +4,7 @@ import smtplib
 import requests
 from email.message import EmailMessage
 
-TOKEN = os.getenv("TRAVELPAYOUTS_TOKEN")
+SERPAPI_KEY = os.getenv("SERPAPI_KEY")
 EMAIL_USER = os.getenv("EMAIL_USER")
 EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD")
 ALERT_TO_EMAIL = os.getenv("ALERT_TO_EMAIL")
@@ -15,7 +15,7 @@ FLIGHTS = [
     {
         "origin": "DFW",
         "destination": "JFK",
-        "departure_date": "2026-08"
+        "departure_date": "2026-08-01"
     }
 ]
 
@@ -33,79 +33,98 @@ def save_state(state):
         json.dump(state, file, indent=2)
 
 
-def get_price(origin, destination, departure_date):
-    print("Calling Travelpayouts API...", flush=True)
+def get_cheapest_flight(origin, destination, departure_date):
+    print("Calling SerpAPI Google Flights...", flush=True)
 
-    url = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
+    url = "https://serpapi.com/search"
 
     params = {
-        "origin": origin,
-        "destination": destination,
-        "departure_at": departure_date,
-        "one_way": "true",
-        "currency": "usd",
-        "market": "us",
-        "sorting": "price",
-        "limit": 1,
-        "token": TOKEN
+        "engine": "google_flights",
+        "departure_id": origin,
+        "arrival_id": destination,
+        "outbound_date": departure_date,
+        "type": "2",
+        "adults": "1",
+        "currency": "USD",
+        "hl": "en",
+        "gl": "us",
+        "api_key": SERPAPI_KEY
     }
 
-    response = requests.get(url, params=params, timeout=30)
+    response = requests.get(url, params=params, timeout=60)
     response.raise_for_status()
-
-    print("Travelpayouts API responded.", flush=True)
 
     data = response.json()
 
-    if not data.get("data"):
+    flights = []
+    flights.extend(data.get("best_flights", []))
+    flights.extend(data.get("other_flights", []))
+
+    if not flights:
         return None
 
-    flight = data["data"][0]
+    cheapest = min(flights, key=lambda f: f.get("price", float("inf")))
+
+    first_leg = cheapest.get("flights", [{}])[0]
+    last_leg = cheapest.get("flights", [{}])[-1]
 
     return {
-        "price": float(flight["price"]),
-        "actual_date": flight.get("departure_at", "")[:10],
-        "airline": flight.get("airline", "N/A"),
-        "flight_number": flight.get("flight_number", "N/A")
+        "price": float(cheapest.get("price")),
+        "airline": first_leg.get("airline", "N/A"),
+        "flight_number": first_leg.get("flight_number", "N/A"),
+        "departure_airport": first_leg.get("departure_airport", {}).get("name", origin),
+        "departure_time": first_leg.get("departure_airport", {}).get("time", "N/A"),
+        "arrival_airport": last_leg.get("arrival_airport", {}).get("name", destination),
+        "arrival_time": last_leg.get("arrival_airport", {}).get("time", "N/A"),
+        "stops": len(cheapest.get("flights", [])) - 1,
+        "booking_source": "Google Flights / SerpAPI",
+        "search_link": f"https://www.google.com/travel/flights?q=Flights%20from%20{origin}%20to%20{destination}%20on%20{departure_date}"
     }
 
 
-def send_email(origin, destination, search_month, actual_date, airline, flight_number, old_price, new_price):
-    print("Preparing email...", flush=True)
-
+def send_email(origin, destination, departure_date, old_price, flight):
+    new_price = flight["price"]
     savings = old_price - new_price
 
     msg = EmailMessage()
-    msg["Subject"] = "Flight Price Drop Alert"
+    msg["Subject"] = "Live Flight Price Drop Alert"
     msg["From"] = EMAIL_USER
     msg["To"] = ALERT_TO_EMAIL
 
     msg.set_content(f"""
 Good news!
 
-Your tracked flight price dropped.
+A live Google Flights price drop was found.
 
 Route: {origin} to {destination}
-Search Month: {search_month}
-Cheapest Travel Date: {actual_date}
+Travel Date: {departure_date}
 
-Airline: {airline}
-Flight Number: {flight_number}
-
+Current Price: ${new_price}
 Previous Lowest Price: ${old_price}
-Current Lowest Price: ${new_price}
 You Save: ${savings}
 
-Book soon because prices can change quickly.
+Airline: {flight["airline"]}
+Flight Number: {flight["flight_number"]}
+Stops: {flight["stops"]}
+
+Departure Airport: {flight["departure_airport"]}
+Departure Time: {flight["departure_time"]}
+
+Arrival Airport: {flight["arrival_airport"]}
+Arrival Time: {flight["arrival_time"]}
+
+Booking Source: {flight["booking_source"]}
+
+Search Link:
+{flight["search_link"]}
+
+Please verify final price before booking because fares can change quickly.
 """)
 
-    print("Connecting to Gmail SMTP...", flush=True)
+    print("Sending email...", flush=True)
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=30) as smtp:
-        print("Logging into Gmail...", flush=True)
         smtp.login(EMAIL_USER, EMAIL_APP_PASSWORD)
-
-        print("Sending email...", flush=True)
         smtp.send_message(msg)
 
     print("Email sent successfully.", flush=True)
@@ -116,49 +135,34 @@ def check_prices():
 
     state = load_state()
 
-    for flight in FLIGHTS:
-        origin = flight["origin"]
-        destination = flight["destination"]
-        search_month = flight["departure_date"]
+    for tracked in FLIGHTS:
+        origin = tracked["origin"]
+        destination = tracked["destination"]
+        departure_date = tracked["departure_date"]
 
-        key = f"{origin}-{destination}-{search_month}"
+        key = f"{origin}-{destination}-{departure_date}"
 
         try:
-            result = get_price(origin, destination, search_month)
+            flight = get_cheapest_flight(origin, destination, departure_date)
 
-            if result is None:
-                print(f"No price found for {origin} to {destination}", flush=True)
+            if flight is None:
+                print(f"No live flight found for {origin} to {destination}", flush=True)
                 continue
 
-            current_price = result["price"]
-            actual_date = result["actual_date"]
-            airline = result["airline"]
-            flight_number = result["flight_number"]
+            current_price = flight["price"]
+            old_price = state.get(key)
 
             print(
-                f"{origin} to {destination}: ${current_price} "
-                f"(Travel Date: {actual_date}, Airline: {airline}, Flight: {flight_number})",
+                f"{origin} to {destination} on {departure_date}: ${current_price}",
                 flush=True
             )
 
-            old_price = state.get(key)
-
             if old_price is None:
                 state[key] = current_price
-                print("Initial price saved.", flush=True)
+                print("Initial live price saved.", flush=True)
 
             elif current_price < old_price:
-                send_email(
-                    origin,
-                    destination,
-                    search_month,
-                    actual_date,
-                    airline,
-                    flight_number,
-                    old_price,
-                    current_price
-                )
-
+                send_email(origin, destination, departure_date, old_price, flight)
                 state[key] = current_price
                 print("Price dropped. Email sent.", flush=True)
 
