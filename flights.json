@@ -1,17 +1,15 @@
 [
   {
     "origin": "DFW",
-    "destination": "JFK",
-    "date": "2026-08-04"
+    "destination": "SFO",
+    "trip_type": "oneway",
+    "date": "2026-07-04"
   },
   {
     "origin": "DFW",
-    "destination": "LGA",
-    "date": "2026-08-04"
-  },
-  {
-    "origin": "DFW",
-    "destination": "EWR",
-    "date": "2026-08-04"
+    "destination": "SFO",
+    "trip_type": "roundtrip",
+    "departure_date": "2026-08-06",
+    "return_date": "2026-08-10"
   }
 ]
