@@ -9,21 +9,21 @@
     "origin": "DFW",
     "destination": "JFK",
     "trip_type": "roundtrip",
-    "departure_date": "2026-08-13",
-    "return_date": "2026-08-17"
+    "departure_date": "2026-08-20",
+    "return_date": "2026-08-24"
   },
   {
     "origin": "DFW",
     "destination": "LGA",
     "trip_type": "roundtrip",
-    "departure_date": "2026-08-13",
-    "return_date": "2026-08-17"
+    "departure_date": "2026-08-20",
+    "return_date": "2026-08-24"
   },
   {
     "origin": "DFW",
     "destination": "EWR",
     "trip_type": "roundtrip",
-    "departure_date": "2026-08-13",
-    "return_date": "2026-08-17"
+    "departure_date": "2026-08-20",
+    "return_date": "2026-08-24"
   }
 ]
