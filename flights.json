@@ -3,5 +3,15 @@
     "origin": "DFW",
     "destination": "SJC",
     "date": "2026-07-04"
+  },
+  {
+    "origin": "DFW",
+    "destination": "SFO",
+    "date": "2026-07-04"
+  },
+  {
+    "origin": "DFW",
+    "destination": "OAK",
+    "date": "2026-07-04"
   }
 ]
