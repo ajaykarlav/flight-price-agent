@@ -1,21 +1,21 @@
 [
   {
     "origin": "DFW",
-    "destination": "JAC",
+    "destination": "SEA",
     "trip_type": "roundtrip",
     "departure_date": "2026-09-03",
     "return_date": "2026-09-08"
   },
   {
     "origin": "DFW",
-    "destination": "SLC",
+    "destination": "LAS",
     "trip_type": "roundtrip",
     "departure_date": "2026-09-03",
     "return_date": "2026-09-08"
   },
   {
     "origin": "DFW",
-    "destination": "LAX",
+    "destination": "SFO",
     "trip_type": "roundtrip",
     "departure_date": "2026-09-03",
     "return_date": "2026-09-08"
