@@ -2,16 +2,16 @@
   {
     "origin": "DFW",
     "destination": "JFK",
-    "day": "2026-08-04"
+    "date": "2026-08-04"
   },
   {
     "origin": "DFW",
     "destination": "LGA",
-    "day": "2026-08-04"
+    "date": "2026-08-04"
   },
   {
     "origin": "DFW",
     "destination": "EWR",
-    "day": "2026-08-04"
+    "date": "2026-08-04"
   }
 ]
