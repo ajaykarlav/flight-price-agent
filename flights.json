@@ -1,17 +1,17 @@
 [
   {
     "origin": "DFW",
-    "destination": "SJC",
-    "date": "2026-07-04"
+    "destination": "JFK",
+    "month": "2026-08"
   },
   {
     "origin": "DFW",
-    "destination": "SFO",
-    "date": "2026-07-04"
+    "destination": "LGA",
+    "month": "2026-08"
   },
   {
     "origin": "DFW",
-    "destination": "OAK",
-    "date": "2026-07-04"
+    "destination": "EWR",
+    "month": "2026-08"
   }
 ]
