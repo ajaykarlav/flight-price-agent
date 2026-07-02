@@ -4,20 +4,20 @@
     "destination": "SEA",
     "trip_type": "roundtrip",
     "departure_date": "2026-09-04",
-    "return_date": "2026-09-08"
+    "return_date": "2026-09-09"
   },
   {
     "origin": "DFW",
     "destination": "LAS",
     "trip_type": "roundtrip",
     "departure_date": "2026-09-04",
-    "return_date": "2026-09-04"
+    "return_date": "2026-09-09"
   },
   {
     "origin": "DFW",
     "destination": "SFO",
     "trip_type": "roundtrip",
     "departure_date": "2026-09-04",
-    "return_date": "2026-09-04"
+    "return_date": "2026-09-09"
   }
 ]
