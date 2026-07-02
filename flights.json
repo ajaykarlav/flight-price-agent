@@ -7,7 +7,21 @@
   },
   {
     "origin": "DFW",
-    "destination": "SFO",
+    "destination": "JFK",
+    "trip_type": "roundtrip",
+    "departure_date": "2026-08-06",
+    "return_date": "2026-08-10"
+  },
+  {
+    "origin": "DFW",
+    "destination": "LGA",
+    "trip_type": "roundtrip",
+    "departure_date": "2026-08-06",
+    "return_date": "2026-08-10"
+  },
+  {
+    "origin": "DFW",
+    "destination": "EWR",
     "trip_type": "roundtrip",
     "departure_date": "2026-08-06",
     "return_date": "2026-08-10"
