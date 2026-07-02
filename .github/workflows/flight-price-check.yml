@@ -23,7 +23,7 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run Flight Agent
-        timeout-minutes: 2
+        timeout-minutes: 5
         env:
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
           #TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
