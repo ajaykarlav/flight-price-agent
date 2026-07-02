@@ -3,21 +3,21 @@
     "origin": "DFW",
     "destination": "JFK",
     "trip_type": "roundtrip",
-    "departure_date": "2026-09-03",
+    "departure_date": "2026-09-04",
     "return_date": "2026-09-08"
   },
   {
     "origin": "DFW",
     "destination": "LGA",
     "trip_type": "roundtrip",
-    "departure_date": "2026-09-03",
+    "departure_date": "2026-09-04",
     "return_date": "2026-09-08"
   },
   {
     "origin": "DFW",
     "destination": "EWR",
     "trip_type": "roundtrip",
-    "departure_date": "2026-09-03",
+    "departure_date": "2026-09-04",
     "return_date": "2026-09-08"
   }
 ]
