@@ -1,27 +1,9 @@
 [
   {
     "origin": "DFW",
-    "destination": "SFO",
-    "trip_type": "oneway",
-    "date": "2026-09-03"
-  },
-  {
-    "origin": "PDX",
-    "destination": "DFW",
-    "trip_type": "oneway",
-    "date": "2026-09-08"
-  },
-  {
-    "origin": "DFW",
-    "destination": "BOI",
-    "trip_type": "oneway",
-    "date": "2026-09-03"
-  },
-  {
-    "origin": "DFW",
-    "destination": "JFK",
+    "destination": "LGA",
     "trip_type": "roundtrip",
     "departure_date": "2026-09-03",
-    "return_date": "2026-09-08"
+    "return_date": "2026-09-07"
   }
 ]
