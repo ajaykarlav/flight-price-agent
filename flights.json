@@ -3,38 +3,38 @@
     "origin": "DAL",
     "destination": "PIT",
     "trip_type": "oneway",
-    "date": "2026-09-12"
+    "date": "2026-09-26"
   },
   {
     "origin": "PIT",
     "destination": "DAL",
     "trip_type": "oneway",
-    "date": "2026-09-13"
+    "date": "2026-09-27"
   },
   {
     "origin": "DAL",
     "destination": "PIT",
     "trip_type": "roundtrip",
-    "departure_date": "2026-09-12",
-    "return_date": "2026-09-13"
+    "departure_date": "2026-09-26",
+    "return_date": "2026-09-27"
   },
   {
     "origin": "PIT",
     "destination": "DFW",
     "trip_type": "oneway",
-    "date": "2026-09-13"
+    "date": "2026-09-27"
   },
   {
     "origin": "DFW",
     "destination": "PIT",
     "trip_type": "oneway",
-    "date": "2026-09-12"
+    "date": "2026-09-26"
   },
   {
     "origin": "DFW",
     "destination": "PIT",
     "trip_type": "roundtrip",
-    "departure_date": "2026-09-12",
-    "return_date": "2026-09-13"
+    "departure_date": "2026-09-26",
+    "return_date": "2026-09-27"
   }
 ]
