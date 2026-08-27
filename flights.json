@@ -3,12 +3,31 @@
     "origin": "DAL",
     "destination": "PDX",
     "trip_type": "oneway",
-    "date": "2026-09-04"
+    "date": "2026-09-11"
   },
   {
     "origin": "PDX",
     "destination": "DAL",
     "trip_type": "oneway",
-    "date": "2026-09-09"
+    "date": "2026-09-13"
+  },
+  {
+    "origin": "DAL",
+    "destination": "PDX",
+    "trip_type": "roundtrip",
+    "departure_date": "2026-09-11"
+    "return_date": "2026-09-13"
+  },
+  {
+    "origin": "PDX",
+    "destination": "DFW",
+    "trip_type": "oneway",
+    "date": "2026-09-13"
+  },
+  {
+    "origin": "DFW",
+    "destination": "PDX",
+    "trip_type": "oneway",
+    "date": "2026-09-11"
   }
 ]
