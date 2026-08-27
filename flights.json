@@ -1,13 +1,13 @@
 [
   {
-    "origin": "DFW",
-    "destination": "SFO",
+    "origin": "DAL",
+    "destination": "PDX",
     "trip_type": "oneway",
     "date": "2026-09-04"
   },
   {
-    "origin": "LAX",
-    "destination": "DFW",
+    "origin": "PDX",
+    "destination": "DAL",
     "trip_type": "oneway",
     "date": "2026-09-09"
   }
